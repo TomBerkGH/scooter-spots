@@ -6,6 +6,19 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+$temporaryDirectory = __DIR__.'/storage/framework/tmp';
+
+if (! is_dir($temporaryDirectory)) {
+    mkdir($temporaryDirectory, 0777, true);
+}
+
+putenv('TEMP='.$temporaryDirectory);
+putenv('TMP='.$temporaryDirectory);
+$_ENV['TEMP'] = $temporaryDirectory;
+$_ENV['TMP'] = $temporaryDirectory;
+$_SERVER['TEMP'] = $temporaryDirectory;
+$_SERVER['TMP'] = $temporaryDirectory;
+
 // Register the Composer autoloader...
 require __DIR__.'/vendor/autoload.php';
 
