@@ -28,6 +28,9 @@ class StoreSpotRequest extends FormRequest
             'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
             'image' => ['required', 'string', 'max:2100000', 'regex:/^data:image\/(jpeg|png);base64,/'],
+
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['integer', 'distinct', 'exists:tags,id'],
         ];
     }
 

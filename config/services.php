@@ -2,6 +2,12 @@
 
 return [
 
+    'nominatim' => [
+        'url' => env('NOMINATIM_URL', 'https://nominatim.openstreetmap.org'),
+        'user_agent' => env('NOMINATIM_USER_AGENT', 'Scooter Spots/1.0 ('.env('APP_URL', 'http://localhost').')'),
+        'email' => env('NOMINATIM_EMAIL'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

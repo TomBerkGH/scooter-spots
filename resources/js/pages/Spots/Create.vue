@@ -10,8 +10,18 @@ import {
 import { onBeforeUnmount, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+
+interface Tag {
+    id: number;
+    name: string;
+}
+
+defineProps<{
+    tags: Tag[];
+}>();
 
 defineOptions({
     layout: {
@@ -28,6 +38,7 @@ const form = useForm({
     latitude: null as number | null,
     longitude: null as number | null,
     image: null as string | null,
+    tags: [] as number[],
 });
 
 const previewUrl = ref<string | null>(null);
@@ -153,6 +164,12 @@ function submit(): void {
     form.post('/spots');
 }
 
+function setTag(tagId: number, selected: boolean): void {
+    form.tags = selected
+        ? [...form.tags, tagId]
+        : form.tags.filter((id) => id !== tagId);
+}
+
 onBeforeUnmount(() => {
     if (previewUrl.value) {
         URL.revokeObjectURL(previewUrl.value);
@@ -271,6 +288,31 @@ getLocation();
                 />
                 <InputError :message="form.errors.description" />
             </div>
+
+            <fieldset v-if="tags.length" class="space-y-3">
+                <legend class="text-sm font-medium">Tags</legend>
+                <p class="text-sm text-muted-foreground">
+                    Kies één of meer tags die bij deze plek passen (optioneel).
+                </p>
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <label
+                        v-for="tag in tags"
+                        :key="tag.id"
+                        :for="`tag-${tag.id}`"
+                        class="flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-colors has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+                    >
+                        <Checkbox
+                            :id="`tag-${tag.id}`"
+                            :model-value="form.tags.includes(tag.id)"
+                            @update:model-value="
+                                setTag(tag.id, $event === true)
+                            "
+                        />
+                        <span>{{ tag.name }}</span>
+                    </label>
+                </div>
+                <InputError :message="form.errors.tags" />
+            </fieldset>
 
             <Button
                 type="submit"

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Spot;
+use App\Models\Tag;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,6 +21,7 @@ test('seeder creates the two scooter spots accounts', function () {
         'email' => 'loes@scooterspots.nl',
     ]);
     expect(Spot::query()->count())->toBe(4);
+    expect(Tag::query()->count())->toBe(28);
     Storage::disk('r2')->assertExists(Spot::query()->pluck('image_path')->all());
 });
 
@@ -39,4 +41,5 @@ test('database seeder can run repeatedly without duplicate spots', function () {
     $this->seed(DatabaseSeeder::class);
 
     expect(Spot::query()->count())->toBe(4);
+    expect(Tag::query()->count())->toBe(28);
 });
