@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Contracts\EnrichesSpotLocation;
+use App\Services\NominatimService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(EnrichesSpotLocation::class, NominatimService::class);
+
         if ($this->app->environment('local') && class_exists(TelescopeApplicationServiceProvider::class)) {
             $this->app->register(TelescopeServiceProvider::class);
         }

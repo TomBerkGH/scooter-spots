@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Data\StoreSpotData;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -40,5 +41,10 @@ class StoreSpotRequest extends FormRequest
             'image.max' => 'De verwerkte foto is te groot. Kies de foto opnieuw.',
             'image.regex' => 'De gekozen foto kon niet worden verwerkt.',
         ];
+    }
+
+    public function toData(): StoreSpotData
+    {
+        return StoreSpotData::fromArray($this->validated());
     }
 }

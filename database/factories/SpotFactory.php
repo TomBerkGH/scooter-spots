@@ -6,6 +6,7 @@ use App\Models\Spot;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/** @extends Factory<Spot> */
 class SpotFactory extends Factory
 {
     protected $model = Spot::class;

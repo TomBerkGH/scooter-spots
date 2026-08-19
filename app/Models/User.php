@@ -35,6 +35,7 @@ class User extends Authenticatable implements PasskeyUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
+    /** @return HasMany<Spot, $this> */
     public function spots(): HasMany
     {
         return $this->hasMany(Spot::class);

@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-class Tag extends Model
-{
-    protected $fillable = ['name', 'slug'];
-}
+#[Fillable(['name', 'slug'])]
+class Tag extends Model {}

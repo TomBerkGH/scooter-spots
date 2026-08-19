@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[Table(name: 'spot_location_data')]
+#[Unguarded]
 class SpotLocationData extends Model
 {
-    protected $table = 'spot_location_data';
-
-    protected $guarded = [];
-
     protected function casts(): array
     {
         return [
@@ -27,6 +27,7 @@ class SpotLocationData extends Model
         ];
     }
 
+    /** @return BelongsTo<Spot, $this> */
     public function spot(): BelongsTo
     {
         return $this->belongsTo(Spot::class);

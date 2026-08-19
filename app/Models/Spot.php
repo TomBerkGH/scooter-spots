@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,26 +11,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
+#[Fillable([
+    'user_id',
+    'title',
+    'description',
+    'latitude',
+    'longitude',
+    'image_path',
+])]
+#[Appends(['image_url', 'navigation_url'])]
 class Spot extends Model
 {
     use HasFactory;
-
-    protected $fillable = [
-        'user_id',
-        'title',
-        'description',
-        'latitude',
-        'longitude',
-        'image_path',
-    ];
-
-    /**
-     * Appends virtuele attributen aan JSON/Inertia output.
-     */
-    protected $appends = [
-        'image_url',
-        'navigation_url',
-    ];
 
     protected function casts(): array
     {
@@ -41,6 +35,7 @@ class Spot extends Model
     /**
      * Eigenaar van de spot.
      */
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -49,11 +44,13 @@ class Spot extends Model
     /**
      * Gekoppelde tags/categorieën.
      */
+    /** @return BelongsToMany<Tag, $this> */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class);
     }
 
+    /** @return HasOne<SpotLocationData, $this> */
     public function locationData(): HasOne
     {
         return $this->hasOne(SpotLocationData::class);
