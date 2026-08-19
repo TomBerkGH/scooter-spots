@@ -76,6 +76,6 @@ class Spot extends Model
             return null;
         }
 
-        return "https://www.google.com/maps/dir/?api=1&destination={$this->latitude},{$this->longitude}";
+        return "https://www.google.com/maps/dir/?api=1&destination=$this->latitude,$this->longitude";
     }
 }

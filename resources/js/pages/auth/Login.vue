@@ -10,7 +10,8 @@ import { store } from '@/routes/login';
 defineOptions({
     layout: {
         title: 'Scooter Spots',
-        description: 'Log in om je plekken te bekijken.',
+        description: 'Log in om je favoriete scooterplekken te bekijken.',
+        scenic: true,
     },
 });
 </script>
@@ -33,6 +34,7 @@ defineOptions({
                 required
                 autofocus
                 placeholder="tom@scooterspots.nl"
+                class="h-11 bg-white/80"
             />
             <InputError :message="errors.email" />
         </div>
@@ -44,6 +46,7 @@ defineOptions({
                 type="password"
                 name="password"
                 required
+                class="h-11 bg-white/80"
             />
             <InputError :message="errors.password" />
         </div>
@@ -51,7 +54,7 @@ defineOptions({
         <Button
             type="submit"
             size="lg"
-            class="w-full"
+            class="w-full bg-emerald-700 text-white hover:bg-emerald-800"
             :disabled="processing"
             data-test="login-button"
         >
