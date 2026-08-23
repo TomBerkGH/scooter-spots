@@ -34,6 +34,7 @@ defineEmits<{
         <div class="p-4">
             <h2 class="truncate text-lg font-semibold">{{ spot.title }}</h2>
             <p class="mt-1 text-xs text-muted-foreground">
+                Door {{ spot.user.name }} ·
                 {{ formatSpotDate(spot.created_at) }}
             </p>
             <p

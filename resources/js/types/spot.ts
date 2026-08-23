@@ -3,6 +3,11 @@ export type Tag = {
     name: string;
 };
 
+export type SpotUser = {
+    id: number;
+    name: string;
+};
+
 export type SpotLocationData = {
     osm_place_id: number | null;
     osm_id: number | null;
@@ -50,6 +55,7 @@ export type Spot = {
     image_url: string;
     navigation_url: string | null;
     created_at: string;
+    user: SpotUser;
     tags: Tag[];
     location_data: SpotLocationData | null;
 };

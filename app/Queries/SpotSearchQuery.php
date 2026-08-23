@@ -18,7 +18,7 @@ class SpotSearchQuery
     public function execute(User $user, string $search = ''): Collection
     {
         return $user->spots()
-            ->with(['tags:id,name', 'locationData'])
+            ->with(['user:id,name', 'tags:id,name', 'locationData'])
             ->when($search !== '', fn (Builder $query) => $this->applySearch($query, $search))
             ->latest()
             ->get();
@@ -28,7 +28,7 @@ class SpotSearchQuery
     public function executeAll(string $search = ''): Collection
     {
         return Spot::query()
-            ->with(['tags:id,name', 'locationData'])
+            ->with(['user:id,name', 'tags:id,name', 'locationData'])
             ->when($search !== '', fn (Builder $query) => $this->applySearch($query, $search))
             ->latest()
             ->get();

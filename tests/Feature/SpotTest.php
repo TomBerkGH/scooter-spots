@@ -35,7 +35,8 @@ test('user only sees their own spots', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Spots/Index')
             ->has('spots', 1)
-            ->where('spots.0.title', 'Mijn plek'));
+            ->where('spots.0.title', 'Mijn plek')
+            ->where('spots.0.user.name', $user->name));
 });
 
 test('user can search their spots by title description or tag', function () {
