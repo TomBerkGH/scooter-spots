@@ -17,6 +17,9 @@ class StoreSpotAction
         private readonly EnrichesSpotLocation $locationEnricher,
     ) {}
 
+    /**
+     * @throws Throwable
+     */
     public function execute(User $user, StoreSpotData $data): Spot
     {
         $imagePath = $this->images->storeDataUrl($data->image);

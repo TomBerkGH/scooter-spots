@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Data\UpdateSpotData;
 use App\Models\Spot;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -33,5 +34,10 @@ class UpdateSpotRequest extends FormRequest
             'tags' => ['nullable', 'array'],
             'tags.*' => ['integer', 'distinct', 'exists:tags,id'],
         ];
+    }
+
+    public function toData(): UpdateSpotData
+    {
+        return UpdateSpotData::fromArray($this->validated());
     }
 }

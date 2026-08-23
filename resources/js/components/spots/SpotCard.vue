@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { Database, MapPin, Navigation, Pencil, Trash2 } from '@lucide/vue';
+import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { formatSpotDate, locationLabel } from '@/lib/spotLocation';
 import type { Spot } from '@/types/spot';
 
 defineProps<{ spot: Spot; canEdit?: boolean; canDelete?: boolean }>();
+
+const isImageZoomed = ref(false);
 
 defineEmits<{
     edit: [spot: Spot];
@@ -15,11 +19,18 @@ defineEmits<{
 
 <template>
     <article class="overflow-hidden rounded-2xl border bg-card shadow-sm">
-        <img
-            :src="spot.image_url"
-            :alt="spot.title"
-            class="aspect-[4/3] w-full object-cover"
-        />
+        <button
+            type="button"
+            class="group block w-full cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            :aria-label="`Afbeelding van ${spot.title} vergroten`"
+            @click="isImageZoomed = true"
+        >
+            <img
+                :src="spot.image_url"
+                :alt="spot.title"
+                class="aspect-[4/3] w-full object-cover transition-transform duration-200 group-hover:scale-105"
+            />
+        </button>
         <div class="p-4">
             <h2 class="truncate text-lg font-semibold">{{ spot.title }}</h2>
             <p class="mt-1 text-xs text-muted-foreground">
@@ -93,4 +104,17 @@ defineEmits<{
             </div>
         </div>
     </article>
+
+    <Dialog v-model:open="isImageZoomed">
+        <DialogContent
+            class="max-w-5xl border-0 bg-transparent p-0 shadow-none"
+        >
+            <DialogTitle class="sr-only">{{ spot.title }}</DialogTitle>
+            <img
+                :src="spot.image_url"
+                :alt="spot.title"
+                class="max-h-[85vh] w-full rounded-lg object-contain"
+            />
+        </DialogContent>
+    </Dialog>
 </template>

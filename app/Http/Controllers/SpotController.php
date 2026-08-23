@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Spots\DeleteSpotAction;
 use App\Actions\Spots\StoreSpotAction;
+use App\Actions\Spots\UpdateSpotAction;
 use App\Http\Requests\StoreSpotRequest;
 use App\Http\Requests\UpdateSpotRequest;
 use App\Models\Spot;
@@ -36,8 +37,7 @@ class SpotController extends Controller
         Request $request,
         SpotSearchQuery $spots,
         AvailableTagsQuery $tags,
-    ): Response
-    {
+    ): Response {
         $search = $spots->normalize($request->query('search'));
 
         return Inertia::render('Spots/Index', [
@@ -74,15 +74,12 @@ class SpotController extends Controller
     /**
      * Werk de tekst van een eigen spot bij.
      */
-    public function update(UpdateSpotRequest $request, Spot $spot): RedirectResponse
+    public function update(UpdateSpotRequest $request, UpdateSpotAction $updateSpot, Spot $spot): RedirectResponse
     {
-        $data = $request->validated();
-
-        $spot->update([
-            'title' => $data['title'],
-            'description' => $data['description'] ?? null,
-        ]);
-        $spot->tags()->sync($data['tags'] ?? []);
+        $updateSpot->execute(
+            $spot,
+            $request->toData()
+        );
 
         return redirect()->route('spots.index')
             ->with('toast', ['type' => 'success', 'message' => 'Plek bijgewerkt.']);
