@@ -5,7 +5,7 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
-defineProps<{ error?: string }>();
+defineProps<{ error?: string; required?: boolean }>();
 
 const latitude = defineModel<number | null>('latitude', { required: true });
 const longitude = defineModel<number | null>('longitude', { required: true });
@@ -46,7 +46,7 @@ onMounted(getLocation);
 
 <template>
     <div class="space-y-2">
-        <Label>Locatie</Label>
+        <Label>Locatie <span v-if="required">(verplicht)</span></Label>
         <div
             v-if="latitude !== null && longitude !== null"
             class="flex items-center gap-3 rounded-xl border bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950/30 dark:text-green-300"
@@ -67,7 +67,8 @@ onMounted(getLocation);
             {{ locating ? 'Locatie ophalen…' : 'Mijn locatie ophalen' }}
         </Button>
         <p v-if="locationError" class="text-sm text-destructive">
-            {{ locationError }} Je kunt de plek alsnog zonder locatie opslaan.
+            {{ locationError }}
+            <span v-if="!required">Je kunt de plek alsnog zonder locatie opslaan.</span>
         </p>
         <InputError :message="error" />
     </div>

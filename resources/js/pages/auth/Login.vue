@@ -9,8 +9,7 @@ import { store } from '@/routes/login';
 
 defineOptions({
     layout: {
-        title: 'Scooter Spots',
-        description: 'Log in om je favoriete scooterplekken te bekijken.',
+        description: 'Log in om je favoriete plekken te bekijken.',
         scenic: true,
     },
 });
@@ -33,7 +32,7 @@ defineOptions({
                 name="email"
                 required
                 autofocus
-                placeholder="tom@scooterspots.nl"
+                placeholder=""
                 class="h-11 bg-white/80"
             />
             <InputError :message="errors.email" />

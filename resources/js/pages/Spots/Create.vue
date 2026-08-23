@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Tag } from '@/types/spot';
 
-defineProps<{ tags: Tag[] }>();
+const props = defineProps<{ tags: Tag[]; locationRequired: boolean }>();
 
 defineOptions({
     layout: {
@@ -62,6 +62,7 @@ function submit(): void {
                 v-model:longitude="form.longitude"
                 v-model:locating="locating"
                 v-model:attempted="locationAttempted"
+                :required="props.locationRequired"
                 :error="form.errors.latitude || form.errors.longitude"
             />
 
@@ -108,6 +109,8 @@ function submit(): void {
                     form.processing ||
                     locating ||
                     !locationAttempted ||
+                    (props.locationRequired &&
+                        (form.latitude === null || form.longitude === null)) ||
                     !form.image
                 "
             >

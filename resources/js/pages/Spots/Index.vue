@@ -58,6 +58,7 @@ function removeSpot(spot: Spot): void {
                 v-for="spot in spots"
                 :key="spot.id"
                 :spot="spot"
+                :can-delete="true"
                 @delete="removeSpot"
                 @show-location="selectedSpot = $event"
             />

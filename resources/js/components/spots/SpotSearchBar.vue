@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 
 const props = defineProps<{
     initialSearch: string;
+    action?: string;
 }>();
 
 const search = ref(props.initialSearch);
@@ -16,7 +17,7 @@ watch(
 );
 
 function submit(): void {
-    router.get('/spots', search.value ? { search: search.value } : {}, {
+    router.get(props.action ?? '/spots', search.value ? { search: search.value } : {}, {
         preserveState: true,
         replace: true,
     });

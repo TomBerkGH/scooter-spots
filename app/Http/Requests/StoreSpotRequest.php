@@ -23,11 +23,13 @@ class StoreSpotRequest extends FormRequest
      */
     public function rules(): array
     {
+        $locationRequired = app()->environment('production');
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
+            'latitude' => [$locationRequired ? 'required' : 'nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
+            'longitude' => [$locationRequired ? 'required' : 'nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
             'image' => ['required', 'string', 'max:2100000', 'regex:/^data:image\/(jpeg|png);base64,/'],
 
             'tags' => ['nullable', 'array'],

@@ -27,7 +27,9 @@ class SpotImageStorage
         }
 
         $extension = str_contains($metadata, 'image/png') ? 'png' : 'jpg';
-        $path = 'spots/'.Str::uuid().'.'.$extension;
+        $prefix = app()->environment('local') ? 'dev/' : 'spots/';
+
+        $path = $prefix.Str::uuid().'.'.$extension;
 
         Storage::disk($this->disk)->put($path, $image);
 

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { formatSpotDate, locationLabel } from '@/lib/spotLocation';
 import type { Spot } from '@/types/spot';
 
-defineProps<{ spot: Spot }>();
+defineProps<{ spot: Spot; canDelete?: boolean }>();
 
 defineEmits<{
     delete: [spot: Spot];
@@ -72,6 +72,7 @@ defineEmits<{
                     <Database />
                 </Button>
                 <Button
+                    v-if="canDelete !== false"
                     variant="outline"
                     size="icon"
                     aria-label="Plek verwijderen"

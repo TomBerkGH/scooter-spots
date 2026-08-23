@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { MapPin, Plus } from '@lucide/vue';
+import { House, MapPin, Plus } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -17,9 +17,14 @@ import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
+        title: 'Alle spots',
+        href: '/',
+        icon: MapPin,
+    },
+    {
         title: 'Mijn plekken',
         href: '/spots',
-        icon: MapPin,
+        icon: House,
     },
     {
         title: 'Plek vastleggen',

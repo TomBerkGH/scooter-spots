@@ -16,6 +16,19 @@ use Inertia\Response;
 class SpotController extends Controller
 {
     /**
+     * Openbaar overzicht van alle spots.
+     */
+    public function home(Request $request, SpotSearchQuery $spots): Response
+    {
+        $search = $spots->normalize($request->query('search'));
+
+        return Inertia::render('Home', [
+            'spots' => $spots->executeAll($search),
+            'filters' => ['search' => $search],
+        ]);
+    }
+
+    /**
      * Overzichtspagina met de kaart en alle opgeslagen spots.
      */
     public function index(Request $request, SpotSearchQuery $spots): Response
@@ -35,6 +48,7 @@ class SpotController extends Controller
     {
         return Inertia::render('Spots/Create', [
             'tags' => $tags->execute(),
+            'locationRequired' => app()->environment('production'),
         ]);
     }
 

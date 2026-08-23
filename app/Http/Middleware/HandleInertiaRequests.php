@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,9 +36,18 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $siteNames = [
+            'scooterspots' => 'Scooter Spots',
+            'wandelspots' => 'Wandel Spots',
+            'localhost' => 'Scooter Spots (DEV)',
+        ];
+        $host = Str::lower($request->getHost());
+        $host = Str::replaceStart('www.', '', $host);
+        $domainName = Str::before($host, '.');
+
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => $siteNames[$domainName] ?? config('app.name'),
             'auth' => [
                 'user' => $request->user(),
             ],

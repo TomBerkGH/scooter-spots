@@ -24,6 +24,16 @@ class SpotSearchQuery
             ->get();
     }
 
+    /** @return Collection<int, Spot> */
+    public function executeAll(string $search = ''): Collection
+    {
+        return Spot::query()
+            ->with(['tags:id,name', 'locationData'])
+            ->when($search !== '', fn (Builder $query) => $this->applySearch($query, $search))
+            ->latest()
+            ->get();
+    }
+
     /** @param Builder<Spot> $query */
     private function applySearch(Builder $query, string $search): void
     {

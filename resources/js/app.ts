@@ -5,14 +5,16 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Scooter Spots';
-
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title, page) => {
+        const appName = String(page.props.name);
+
+        return title ? `${title} - ${appName}` : appName;
+    },
     layout: (name) => {
         switch (true) {
-            case name === 'Welcome':
-                return null;
+            case name === 'Home':
+                return undefined;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):
