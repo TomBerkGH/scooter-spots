@@ -194,6 +194,21 @@ test('create form shows the available tags alphabetically', function () {
             ->where('tags.1.name', 'Zonnig'));
 });
 
+test('spots page shows the available tags alphabetically', function () {
+    $user = User::factory()->create();
+    Tag::query()->create(['name' => 'Zonnig', 'slug' => 'zonnig']);
+    Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
+
+    $this->actingAs($user)
+        ->get(route('spots.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Spots/Index')
+            ->has('tags', 2)
+            ->where('tags.0.name', 'Rustig')
+            ->where('tags.1.name', 'Zonnig'));
+});
+
 test('user can assign existing tags to a new spot', function () {
     Storage::fake('public');
     $user = User::factory()->create();
@@ -246,6 +261,98 @@ test('user can store a spot without location', function () {
     expect($spot->latitude)->toBeNull()
         ->and($spot->longitude)->toBeNull()
         ->and($spot->navigation_url)->toBeNull();
+});
+
+test('owner can update a spots title description and tags', function () {
+    $user = User::factory()->create();
+    $oldTag = Tag::query()->create(['name' => 'Oud', 'slug' => 'oud']);
+    $newTag = Tag::query()->create(['name' => 'Uitzicht', 'slug' => 'uitzicht']);
+    $spot = Spot::factory()->for($user)->create([
+        'title' => 'Oude titel',
+        'description' => 'Oude omschrijving',
+        'latitude' => 52.09,
+        'longitude' => 5.12,
+    ]);
+    $spot->tags()->attach($oldTag);
+
+    $this->actingAs($user)
+        ->patch(route('spots.update', $spot), [
+            'title' => 'Nieuwe titel',
+            'description' => 'Nieuwe omschrijving',
+            'tags' => [$newTag->id],
+        ])
+        ->assertRedirect(route('spots.index'));
+
+    $this->assertDatabaseHas('spots', [
+        'id' => $spot->id,
+        'title' => 'Nieuwe titel',
+        'description' => 'Nieuwe omschrijving',
+    ]);
+    $updatedSpot = $spot->fresh();
+    expect($updatedSpot->tags->pluck('id')->all())
+        ->toBe([$newTag->id])
+        ->and($updatedSpot->latitude)->toBe(52.09)
+        ->and($updatedSpot->longitude)->toBe(5.12);
+});
+
+test('owner can remove all tags from a spot', function () {
+    $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Uitzicht', 'slug' => 'uitzicht']);
+    $spot = Spot::factory()->for($user)->create();
+    $spot->tags()->attach($tag);
+
+    $this->actingAs($user)
+        ->patch(route('spots.update', $spot), [
+            'title' => $spot->title,
+            'description' => $spot->description,
+            'tags' => [],
+        ])
+        ->assertRedirect(route('spots.index'));
+
+    expect($spot->fresh()->tags)->toHaveCount(0);
+});
+
+test('user cannot update a spot with an invalid tag', function () {
+    $user = User::factory()->create();
+    $spot = Spot::factory()->for($user)->create([
+        'title' => 'Oude titel',
+        'description' => 'Oude omschrijving',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('spots.update', $spot), [
+            'title' => 'Nieuwe titel',
+            'description' => 'Nieuwe omschrijving',
+            'tags' => [999999],
+        ])
+        ->assertSessionHasErrors('tags.0');
+
+    $this->assertDatabaseHas('spots', [
+        'id' => $spot->id,
+        'title' => 'Oude titel',
+        'description' => 'Oude omschrijving',
+    ]);
+});
+
+test('user cannot update another users spot', function () {
+    $user = User::factory()->create();
+    $spot = Spot::factory()->create([
+        'title' => 'Oude titel',
+        'description' => 'Oude omschrijving',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('spots.update', $spot), [
+            'title' => 'Nieuwe titel',
+            'description' => 'Nieuwe omschrijving',
+        ])
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('spots', [
+        'id' => $spot->id,
+        'title' => 'Oude titel',
+        'description' => 'Oude omschrijving',
+    ]);
 });
 
 test('user cannot delete another users spot', function () {

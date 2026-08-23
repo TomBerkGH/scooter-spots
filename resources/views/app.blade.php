@@ -17,9 +17,7 @@
         @fonts
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
-        <x-inertia::head>
-            <title>{{ $page['props']['name'] }}</title>
-        </x-inertia::head>
+        <title>{{ $page['props']['name'] }}</title>
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />

@@ -50,7 +50,6 @@ const user = computed(() => page.props.auth.user);
                     name="name"
                     :default-value="user.name"
                     required
-                    autocomplete="name"
                     placeholder="Full name"
                 />
                 <InputError class="mt-2" :message="errors.name" />
@@ -65,7 +64,6 @@ const user = computed(() => page.props.auth.user);
                     name="email"
                     :default-value="user.email"
                     required
-                    autocomplete="username"
                     placeholder="Email address"
                 />
                 <InputError class="mt-2" :message="errors.email" />

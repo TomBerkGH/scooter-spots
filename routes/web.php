@@ -9,7 +9,7 @@ Route::middleware('auth')->group(function () {
     Route::redirect('dashboard', '/spots')->name('dashboard');
 
     Route::resource('spots', SpotController::class)
-        ->only(['index', 'create', 'store', 'destroy']);
+        ->only(['index', 'create', 'store', 'update', 'destroy']);
 });
 
 require __DIR__.'/settings.php';

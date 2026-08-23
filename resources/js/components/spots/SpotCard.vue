@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { Database, MapPin, Navigation, Trash2 } from '@lucide/vue';
+import { Database, MapPin, Navigation, Pencil, Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { formatSpotDate, locationLabel } from '@/lib/spotLocation';
 import type { Spot } from '@/types/spot';
 
-defineProps<{ spot: Spot; canDelete?: boolean }>();
+defineProps<{ spot: Spot; canEdit?: boolean; canDelete?: boolean }>();
 
 defineEmits<{
+    edit: [spot: Spot];
     delete: [spot: Spot];
     showLocation: [spot: Spot];
 }>();
@@ -70,6 +71,15 @@ defineEmits<{
                     @click="$emit('showLocation', spot)"
                 >
                     <Database />
+                </Button>
+                <Button
+                    v-if="canEdit === true"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Plek bewerken"
+                    @click="$emit('edit', spot)"
+                >
+                    <Pencil />
                 </Button>
                 <Button
                     v-if="canDelete !== false"

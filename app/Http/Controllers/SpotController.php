@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Spots\DeleteSpotAction;
 use App\Actions\Spots\StoreSpotAction;
 use App\Http\Requests\StoreSpotRequest;
+use App\Http\Requests\UpdateSpotRequest;
 use App\Models\Spot;
 use App\Queries\AvailableTagsQuery;
 use App\Queries\SpotSearchQuery;
@@ -31,12 +32,17 @@ class SpotController extends Controller
     /**
      * Overzichtspagina met de kaart en alle opgeslagen spots.
      */
-    public function index(Request $request, SpotSearchQuery $spots): Response
+    public function index(
+        Request $request,
+        SpotSearchQuery $spots,
+        AvailableTagsQuery $tags,
+    ): Response
     {
         $search = $spots->normalize($request->query('search'));
 
         return Inertia::render('Spots/Index', [
             'spots' => $spots->execute($request->user(), $search),
+            'tags' => $tags->execute(),
             'filters' => ['search' => $search],
         ]);
     }
@@ -63,6 +69,23 @@ class SpotController extends Controller
 
         return redirect()->route('spots.index')
             ->with('toast', ['type' => 'success', 'message' => 'Plek opgeslagen.']);
+    }
+
+    /**
+     * Werk de tekst van een eigen spot bij.
+     */
+    public function update(UpdateSpotRequest $request, Spot $spot): RedirectResponse
+    {
+        $data = $request->validated();
+
+        $spot->update([
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+        ]);
+        $spot->tags()->sync($data['tags'] ?? []);
+
+        return redirect()->route('spots.index')
+            ->with('toast', ['type' => 'success', 'message' => 'Plek bijgewerkt.']);
     }
 
     /**

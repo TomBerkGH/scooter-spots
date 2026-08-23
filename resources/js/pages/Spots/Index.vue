@@ -2,19 +2,25 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Plus } from '@lucide/vue';
 import { ref } from 'vue';
+import DeleteSpotDialog from '@/components/spots/DeleteSpotDialog.vue';
+import EditSpotDialog from '@/components/spots/EditSpotDialog.vue';
 import SpotCard from '@/components/spots/SpotCard.vue';
 import SpotLocationDetailsModal from '@/components/spots/SpotLocationDetailsModal.vue';
 import SpotSearchBar from '@/components/spots/SpotSearchBar.vue';
 import SpotsEmptyState from '@/components/spots/SpotsEmptyState.vue';
 import { Button } from '@/components/ui/button';
-import type { Spot } from '@/types/spot';
+import type { Spot, Tag } from '@/types/spot';
 
 defineProps<{
     spots: Spot[];
+    tags: Tag[];
     filters: { search: string };
 }>();
 
 const selectedSpot = ref<Spot | null>(null);
+const spotToDelete = ref<Spot | null>(null);
+const spotToEdit = ref<Spot | null>(null);
+const isDeleting = ref(false);
 
 defineOptions({
     layout: {
@@ -23,16 +29,43 @@ defineOptions({
 });
 
 function removeSpot(spot: Spot): void {
-    if (window.confirm(`Wil je “${spot.title}” verwijderen?`)) {
-        router.delete(`/spots/${spot.id}`, { preserveScroll: true });
+    spotToDelete.value = spot;
+}
+
+function editSpot(spot: Spot): void {
+    spotToEdit.value = spot;
+}
+
+function closeDeleteDialog(): void {
+    if (!isDeleting.value) {
+        spotToDelete.value = null;
     }
+}
+
+function confirmRemoveSpot(): void {
+    const spot = spotToDelete.value;
+
+    if (!spot || isDeleting.value) {
+        return;
+    }
+
+    isDeleting.value = true;
+    router.delete(`/spots/${spot.id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            spotToDelete.value = null;
+        },
+        onFinish: () => {
+            isDeleting.value = false;
+        },
+    });
 }
 </script>
 
 <template>
     <Head title="Mijn plekken" />
 
-    <main class="mx-auto w-full max-w-5xl px-4 py-6 pb-28 sm:px-6">
+    <main class="mx-auto w-full px-4 py-6 pb-28 sm:px-6 lg:px-8">
         <div class="mb-6 flex items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight">
@@ -53,12 +86,17 @@ function removeSpot(spot: Spot): void {
         />
         <SpotsEmptyState v-if="!spots.length" :search="filters.search" />
 
-        <div v-else class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+            v-else
+            class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-8"
+        >
             <SpotCard
                 v-for="spot in spots"
                 :key="spot.id"
                 :spot="spot"
+                :can-edit="true"
                 :can-delete="true"
+                @edit="editSpot"
                 @delete="removeSpot"
                 @show-location="selectedSpot = $event"
             />
@@ -82,6 +120,20 @@ function removeSpot(spot: Spot): void {
     <SpotLocationDetailsModal
         :spot="selectedSpot"
         @close="selectedSpot = null"
+    />
+
+    <DeleteSpotDialog
+        :spot="spotToDelete"
+        :deleting="isDeleting"
+        @close="closeDeleteDialog"
+        @confirm="confirmRemoveSpot"
+    />
+
+    <EditSpotDialog
+        :spot="spotToEdit"
+        :tags="tags"
+        @close="spotToEdit = null"
+        @saved="spotToEdit = null"
     />
 
     <div

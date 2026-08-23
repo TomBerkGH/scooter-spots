@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Spot;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,7 +13,11 @@ class UpdateSpotRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        $spot = $this->route('spot');
+
+        return $this->user() !== null
+            && $spot instanceof Spot
+            && $spot->user_id === $this->user()->id;
     }
 
     /**
@@ -23,7 +28,10 @@ class UpdateSpotRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['integer', 'distinct', 'exists:tags,id'],
         ];
     }
 }
