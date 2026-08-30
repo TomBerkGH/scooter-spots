@@ -1,14 +1,37 @@
 <script setup lang="ts">
 import { Camera } from '@lucide/vue';
-import { onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Label } from '@/components/ui/label';
 
-defineProps<{ error?: string }>();
+const props = withDefaults(
+    defineProps<{
+        id?: string;
+        label?: string;
+        error?: string;
+        required?: boolean;
+        existingImageUrl?: string | null;
+    }>(),
+    {
+        id: 'image',
+        label: 'Foto',
+        error: undefined,
+        required: true,
+        existingImageUrl: null,
+    },
+);
 
 const imageData = defineModel<string | null>({ required: true });
-const previewUrl = ref<string | null>(null);
+const previewUrl = ref<string | null>(props.existingImageUrl);
+const objectPreviewUrl = ref<string | null>(null);
 const processingError = ref<string | null>(null);
+
+function clearObjectPreview(): void {
+    if (objectPreviewUrl.value) {
+        URL.revokeObjectURL(objectPreviewUrl.value);
+        objectPreviewUrl.value = null;
+    }
+}
 
 async function resizeImage(file: File): Promise<File> {
     const sourceUrl = URL.createObjectURL(file);
@@ -61,10 +84,7 @@ async function resizeImage(file: File): Promise<File> {
 async function selectImage(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0] ?? null;
 
-    if (previewUrl.value) {
-        URL.revokeObjectURL(previewUrl.value);
-    }
-
+    clearObjectPreview();
     previewUrl.value = null;
     imageData.value = null;
     processingError.value = null;
@@ -81,25 +101,37 @@ async function selectImage(event: Event): Promise<void> {
             reader.onerror = () => reject(reader.error);
             reader.readAsDataURL(resizedImage);
         });
-        previewUrl.value = URL.createObjectURL(resizedImage);
+        objectPreviewUrl.value = URL.createObjectURL(resizedImage);
+        previewUrl.value = objectPreviewUrl.value;
     } catch {
         processingError.value =
             'Deze foto kon niet worden verwerkt. Kies een andere foto.';
     }
 }
 
+watch(
+    () => props.existingImageUrl,
+    (existingImageUrl) => {
+        clearObjectPreview();
+        previewUrl.value = existingImageUrl;
+    },
+);
+
 onBeforeUnmount(() => {
-    if (previewUrl.value) {
-        URL.revokeObjectURL(previewUrl.value);
-    }
+    clearObjectPreview();
 });
 </script>
 
 <template>
     <div class="space-y-2">
-        <Label for="image">Foto</Label>
+        <Label :for="props.id">
+            {{ props.label }}
+            <span class="text-muted-foreground">
+                ({{ props.required ? 'verplicht' : 'optioneel' }})
+            </span>
+        </Label>
         <label
-            for="image"
+            :for="props.id"
             class="relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-muted/40 text-center hover:bg-muted/70"
         >
             <img
@@ -110,19 +142,25 @@ onBeforeUnmount(() => {
             />
             <div v-else class="p-6">
                 <Camera class="mx-auto mb-3 size-9" />
-                <span class="font-medium">Maak of kies een foto</span>
+                <span class="font-medium">
+                    {{
+                        props.required
+                            ? 'Maak of kies een foto'
+                            : 'Kies een foto'
+                    }}
+                </span>
                 <span class="mt-1 block text-xs text-muted-foreground">
                     Maximaal 10 MB
                 </span>
             </div>
         </label>
         <input
-            id="image"
+            :id="props.id"
             type="file"
             accept="image/*"
             capture="environment"
             class="sr-only"
-            required
+            :required="props.required"
             @change="selectImage"
         />
         <InputError :message="processingError ?? error" />

@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\SpotImageType;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'user_id',
@@ -17,7 +18,6 @@ use Illuminate\Support\Facades\Storage;
     'description',
     'latitude',
     'longitude',
-    'image_path',
 ])]
 #[Appends(['image_url', 'navigation_url'])]
 class Spot extends Model
@@ -56,18 +56,35 @@ class Spot extends Model
         return $this->hasOne(SpotLocationData::class);
     }
 
+    /** @return HasMany<SpotImage, $this> */
+    public function images(): HasMany
+    {
+        return $this->hasMany(SpotImage::class);
+    }
+
+    /** @return HasOne<SpotImage, $this> */
+    public function mainImage(): HasOne
+    {
+        return $this->hasOne(SpotImage::class)
+            ->where('type', SpotImageType::Main->value);
+    }
+
     /**
      * Genereert de volledige publieke URL voor de afbeelding.
      */
     public function getImageUrlAttribute(): string
     {
-        $disk = config('filesystems.spots_disk');
+        $mainImage = $this->relationLoaded('images')
+            ? $this->images->first(
+                fn (SpotImage $image): bool => $image->type === SpotImageType::Main,
+            )
+            : $this->mainImage()->firstOrFail();
 
-        if ($disk === 'r2') {
-            return Storage::disk($disk)->temporaryUrl($this->image_path, now()->addHour());
+        if ($mainImage === null) {
+            $mainImage = $this->mainImage()->firstOrFail();
         }
 
-        return Storage::disk($disk)->url($this->image_path);
+        return $mainImage->image_url;
     }
 
     /**

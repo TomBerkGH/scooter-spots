@@ -22,17 +22,19 @@ defineEmits<{
         <button
             type="button"
             class="group block w-full cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            :aria-label="`Afbeelding van ${spot.title} vergroten`"
+            :aria-label="`Afbeelding van ${spot.title ?? 'deze plek'} vergroten`"
             @click="isImageZoomed = true"
         >
             <img
                 :src="spot.image_url"
-                :alt="spot.title"
+                :alt="spot.title ?? 'Spotafbeelding'"
                 class="aspect-[4/3] w-full object-cover transition-transform duration-200 group-hover:scale-105"
             />
         </button>
         <div class="p-4">
-            <h2 class="truncate text-lg font-semibold">{{ spot.title }}</h2>
+            <h2 class="truncate text-lg font-semibold">
+                {{ spot.title || 'Naamloze plek' }}
+            </h2>
             <p class="mt-1 text-xs text-muted-foreground">
                 Door {{ spot.user.name }} ·
                 {{ formatSpotDate(spot.created_at) }}
@@ -110,10 +112,12 @@ defineEmits<{
         <DialogContent
             class="max-w-5xl border-0 bg-transparent p-0 shadow-none"
         >
-            <DialogTitle class="sr-only">{{ spot.title }}</DialogTitle>
+            <DialogTitle class="sr-only">
+                {{ spot.title || 'Naamloze plek' }}
+            </DialogTitle>
             <img
                 :src="spot.image_url"
-                :alt="spot.title"
+                :alt="spot.title ?? 'Spotafbeelding'"
                 class="max-h-[85vh] w-full rounded-lg object-contain"
             />
         </DialogContent>

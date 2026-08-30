@@ -20,11 +20,11 @@ test('it creates typed spot data from validated request values', function () {
 
 test('it supplies nullable defaults for optional values', function () {
     $data = StoreSpotData::fromArray([
-        'title' => 'Testplek',
         'image' => 'data:image/png;base64,aW1hZ2U=',
     ]);
 
-    expect($data->description)->toBeNull()
+    expect($data->title)->toBeNull()
+        ->and($data->description)->toBeNull()
         ->and($data->latitude)->toBeNull()
         ->and($data->longitude)->toBeNull()
         ->and($data->tagIds)->toBe([]);

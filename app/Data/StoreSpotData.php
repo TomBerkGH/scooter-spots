@@ -6,7 +6,7 @@ final readonly class StoreSpotData
 {
     /** @param list<int> $tagIds */
     public function __construct(
-        public string $title,
+        public ?string $title,
         public ?string $description,
         public ?float $latitude,
         public ?float $longitude,
@@ -18,7 +18,7 @@ final readonly class StoreSpotData
     public static function fromArray(array $data): self
     {
         return new self(
-            title: (string) $data['title'],
+            title: isset($data['title']) ? (string) $data['title'] : null,
             description: isset($data['description']) ? (string) $data['description'] : null,
             latitude: isset($data['latitude']) ? (float) $data['latitude'] : null,
             longitude: isset($data['longitude']) ? (float) $data['longitude'] : null,

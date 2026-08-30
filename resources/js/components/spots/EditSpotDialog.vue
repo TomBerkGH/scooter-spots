@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { LoaderCircle, Pencil } from '@lucide/vue';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
+import SpotPhotoInput from '@/components/spots/SpotPhotoInput.vue';
 import SpotTagSelector from '@/components/spots/SpotTagSelector.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,15 +33,23 @@ const form = useForm({
     title: '',
     description: '',
     tags: [] as number[],
+    images: { view: null as string | null },
 });
+
+const existingViewImageUrl = computed(
+    () =>
+        props.spot?.images.find((image) => image.type === 'view')?.image_url ??
+        null,
+);
 
 watch(
     () => props.spot,
     (spot) => {
         if (spot) {
-            form.title = spot.title;
+            form.title = spot.title ?? '';
             form.description = spot.description ?? '';
             form.tags = spot.tags.map((tag) => tag.id);
+            form.images.view = null;
             form.clearErrors();
         }
     },
@@ -78,12 +87,16 @@ function submit(): void {
                         Plek bewerken
                     </DialogTitle>
                     <DialogDescription>
-                        Pas de naam en omschrijving van deze plek aan.
+                        Pas de naam, omschrijving en afbeeldingen van deze plek
+                        aan.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div class="space-y-2">
-                    <Label for="edit-title">Naam van de plek</Label>
+                    <Label for="edit-title">
+                        Naam van de plek
+                        <span class="text-muted-foreground">(optioneel)</span>
+                    </Label>
                     <Input
                         id="edit-title"
                         v-model="form.title"
@@ -110,6 +123,15 @@ function submit(): void {
                     <InputError :message="form.errors.description" />
                 </div>
 
+                <SpotPhotoInput
+                    id="edit-view"
+                    v-model="form.images.view"
+                    label="Uitzicht"
+                    :required="false"
+                    :existing-image-url="existingViewImageUrl"
+                    :error="form.errors['images.view']"
+                />
+
                 <SpotTagSelector
                     v-model="form.tags"
                     :tags="tags"
@@ -122,7 +144,10 @@ function submit(): void {
                             Annuleren
                         </Button>
                     </DialogClose>
-                    <Button type="submit" :disabled="form.processing">
+                    <Button
+                        type="submit"
+                        :disabled="form.processing || !form.tags.length"
+                    >
                         <LoaderCircle
                             v-if="form.processing"
                             class="animate-spin"

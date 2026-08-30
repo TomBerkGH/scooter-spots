@@ -67,13 +67,15 @@ function submit(): void {
             />
 
             <div class="space-y-2">
-                <Label for="title">Naam van de plek</Label>
+                <Label for="title">
+                    Naam van de plek
+                    <span class="text-muted-foreground">(optioneel)</span>
+                </Label>
                 <Input
                     id="title"
                     v-model="form.title"
                     placeholder="Bijvoorbeeld: bankje aan het water"
                     maxlength="255"
-                    required
                     autofocus
                 />
                 <InputError :message="form.errors.title" />
@@ -109,6 +111,7 @@ function submit(): void {
                     form.processing ||
                     locating ||
                     !locationAttempted ||
+                    !form.tags.length ||
                     (props.locationRequired &&
                         (form.latitude === null || form.longitude === null)) ||
                     !form.image

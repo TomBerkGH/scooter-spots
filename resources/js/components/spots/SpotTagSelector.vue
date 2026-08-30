@@ -21,7 +21,7 @@ function setTag(tagId: number, selected: boolean): void {
     <fieldset v-if="tags.length" class="space-y-3">
         <legend class="text-sm font-medium">Tags</legend>
         <p class="text-sm text-muted-foreground">
-            Kies één of meer tags die bij deze plek passen (optioneel).
+            Kies één of meer tags die bij deze plek passen (verplicht).
         </p>
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <label

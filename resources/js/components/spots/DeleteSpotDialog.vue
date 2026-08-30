@@ -42,7 +42,7 @@ function handleOpenChange(open: boolean): void {
                 <DialogDescription>
                     Weet je zeker dat je
                     <span class="font-medium text-foreground">
-                        “{{ spot.title }}”
+                        “{{ spot.title || 'deze plek' }}”
                     </span>
                     wilt verwijderen? Deze actie kan niet ongedaan worden.
                 </DialogDescription>

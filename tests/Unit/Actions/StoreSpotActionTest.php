@@ -37,7 +37,9 @@ test('it stores a spot tags and image before enriching its location', function (
 
     expect($spot->user_id)->toBe($user->id)
         ->and($spot->tags()->pluck('tags.id')->all())->toBe([$tag->id]);
-    Storage::disk('public')->assertExists($spot->image_path);
+    Storage::disk('public')->assertExists(
+        $spot->mainImage()->firstOrFail()->path,
+    );
 });
 
 test('it removes the stored image when database persistence fails', function () {

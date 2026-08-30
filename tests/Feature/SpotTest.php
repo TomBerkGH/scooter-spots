@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\SpotImageType;
 use App\Models\Spot;
+use App\Models\SpotImage;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
@@ -77,6 +79,7 @@ test('user can store a spot with photo and location', function () {
     Storage::fake('public');
     Http::fake(['*' => Http::response([], 503)]);
     $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Uitzicht', 'slug' => 'uitzicht']);
 
     $this->actingAs($user)
         ->post(route('spots.store'), [
@@ -85,17 +88,19 @@ test('user can store a spot with photo and location', function () {
             'latitude' => 52.090737,
             'longitude' => 5.121420,
             'image' => testImageData(),
+            'tags' => [$tag->id],
         ])
         ->assertRedirect(route('spots.index'));
 
     $spot = Spot::firstOrFail();
 
     expect($spot->user_id)->toBe($user->id);
-    Storage::disk('public')->assertExists($spot->image_path);
+    Storage::disk('public')->assertExists($spot->mainImage()->firstOrFail()->path);
 });
 
 test('spot with coordinates is enriched with OpenStreetMap data', function () {
     Storage::fake('public');
+    $tag = Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
     $user = User::factory()->create();
     Http::fake([
         '*' => Http::response([
@@ -134,6 +139,7 @@ test('spot with coordinates is enriched with OpenStreetMap data', function () {
             'latitude' => 52.090737,
             'longitude' => 5.121420,
             'image' => testImageData(),
+            'tags' => [$tag->id],
         ])
         ->assertRedirect(route('spots.index'));
 
@@ -166,6 +172,7 @@ test('spot is still stored when OpenStreetMap is unavailable', function () {
     Storage::fake('public');
     Http::fake(['*' => Http::response([], 503)]);
     $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
 
     $this->actingAs($user)
         ->post(route('spots.store'), [
@@ -173,6 +180,7 @@ test('spot is still stored when OpenStreetMap is unavailable', function () {
             'latitude' => 52.090737,
             'longitude' => 5.121420,
             'image' => testImageData(),
+            'tags' => [$tag->id],
         ])
         ->assertRedirect(route('spots.index'));
 
@@ -249,11 +257,13 @@ test('user cannot assign a tag that does not exist', function () {
 test('user can store a spot without location', function () {
     Storage::fake('public');
     $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
 
     $this->actingAs($user)
         ->post(route('spots.store'), [
             'title' => 'Plek zonder GPS',
             'image' => testImageData(),
+            'tags' => [$tag->id],
         ])
         ->assertRedirect(route('spots.index'));
 
@@ -262,6 +272,50 @@ test('user can store a spot without location', function () {
     expect($spot->latitude)->toBeNull()
         ->and($spot->longitude)->toBeNull()
         ->and($spot->navigation_url)->toBeNull();
+});
+
+test('user can store a spot without a title', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
+
+    $this->actingAs($user)
+        ->post(route('spots.store'), [
+            'image' => testImageData(),
+            'tags' => [$tag->id],
+        ])
+        ->assertRedirect(route('spots.index'));
+
+    $this->assertDatabaseHas('spots', [
+        'user_id' => $user->id,
+        'title' => null,
+    ]);
+});
+
+test('user cannot store a spot without a tag', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post(route('spots.store'), [
+            'image' => testImageData(),
+        ])
+        ->assertSessionHasErrors('tags');
+
+    expect(Spot::query()->count())->toBe(0);
+});
+
+test('user cannot store a spot without a main image', function () {
+    $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
+
+    $this->actingAs($user)
+        ->post(route('spots.store'), [
+            'tags' => [$tag->id],
+        ])
+        ->assertSessionHasErrors('image');
+
+    expect(Spot::query()->count())->toBe(0);
 });
 
 test('owner can update a spots title description and tags', function () {
@@ -296,7 +350,73 @@ test('owner can update a spots title description and tags', function () {
         ->and($updatedSpot->longitude)->toBe(5.12);
 });
 
-test('owner can remove all tags from a spot', function () {
+test('owner can update a spot without a title', function () {
+    $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
+    $spot = Spot::factory()->for($user)->create(['title' => 'Oude titel']);
+    $spot->tags()->attach($tag);
+
+    $this->actingAs($user)
+        ->patch(route('spots.update', $spot), [
+            'title' => null,
+            'description' => $spot->description,
+            'tags' => [$tag->id],
+        ])
+        ->assertRedirect(route('spots.index'));
+
+    $this->assertDatabaseHas('spots', [
+        'id' => $spot->id,
+        'title' => null,
+    ]);
+});
+
+test('owner can add an optional view image to a spot', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
+    $spot = Spot::factory()->for($user)->create();
+
+    $this->actingAs($user)
+        ->patch(route('spots.update', $spot), [
+            'title' => $spot->title,
+            'description' => $spot->description,
+            'images' => ['view' => testImageData()],
+            'tags' => [$tag->id],
+        ])
+        ->assertRedirect(route('spots.index'));
+
+    $viewImage = SpotImage::query()->where('spot_id', $spot->id)->firstOrFail();
+
+    expect($viewImage->type)->toBe(SpotImageType::View);
+    Storage::disk('public')->assertExists($viewImage->path);
+});
+
+test('owner can replace an existing view image', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $tag = Tag::query()->create(['name' => 'Rustig', 'slug' => 'rustig']);
+    $spot = Spot::factory()->for($user)->create();
+    $oldPath = 'spots/old-view.jpg';
+    Storage::disk('public')->put($oldPath, 'old image');
+    $spot->images()->create(['type' => 'view', 'path' => $oldPath]);
+
+    $this->actingAs($user)
+        ->patch(route('spots.update', $spot), [
+            'title' => $spot->title,
+            'description' => $spot->description,
+            'images' => ['view' => testImageData()],
+            'tags' => [$tag->id],
+        ])
+        ->assertRedirect(route('spots.index'));
+
+    $newPath = $spot->fresh()->images()->firstOrFail()->path;
+
+    expect($newPath)->not->toBe($oldPath);
+    Storage::disk('public')->assertMissing($oldPath);
+    Storage::disk('public')->assertExists($newPath);
+});
+
+test('owner cannot remove all tags from a spot', function () {
     $user = User::factory()->create();
     $tag = Tag::query()->create(['name' => 'Uitzicht', 'slug' => 'uitzicht']);
     $spot = Spot::factory()->for($user)->create();
@@ -308,9 +428,9 @@ test('owner can remove all tags from a spot', function () {
             'description' => $spot->description,
             'tags' => [],
         ])
-        ->assertRedirect(route('spots.index'));
+        ->assertSessionHasErrors('tags');
 
-    expect($spot->fresh()->tags)->toHaveCount(0);
+    expect($spot->fresh()->tags)->toHaveCount(1);
 });
 
 test('user cannot update a spot with an invalid tag', function () {
@@ -371,7 +491,7 @@ test('owner can delete spot and photo', function () {
     Storage::fake('public');
     $user = User::factory()->create();
     Storage::disk('public')->put('spots/photo.jpg', 'photo');
-    $spot = Spot::factory()->for($user)->create(['image_path' => 'spots/photo.jpg']);
+    $spot = Spot::factory()->for($user)->withMainImage('spots/photo.jpg')->create();
 
     $this->actingAs($user)
         ->delete(route('spots.destroy', $spot))
@@ -379,4 +499,20 @@ test('owner can delete spot and photo', function () {
 
     $this->assertDatabaseMissing('spots', ['id' => $spot->id]);
     Storage::disk('public')->assertMissing('spots/photo.jpg');
+});
+
+test('owner can delete a spot and its additional images', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    Storage::disk('public')->put('spots/photo.jpg', 'photo');
+    Storage::disk('public')->put('spots/view.jpg', 'view');
+    $spot = Spot::factory()->for($user)->withMainImage('spots/photo.jpg')->create();
+    $spot->images()->create(['type' => 'view', 'path' => 'spots/view.jpg']);
+
+    $this->actingAs($user)
+        ->delete(route('spots.destroy', $spot))
+        ->assertRedirect(route('spots.index'));
+
+    Storage::disk('public')->assertMissing('spots/photo.jpg');
+    Storage::disk('public')->assertMissing('spots/view.jpg');
 });

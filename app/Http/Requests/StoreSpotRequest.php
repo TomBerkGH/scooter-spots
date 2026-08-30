@@ -26,13 +26,13 @@ class StoreSpotRequest extends FormRequest
         $locationRequired = app()->environment('production');
 
         return [
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'latitude' => [$locationRequired ? 'required' : 'nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
             'longitude' => [$locationRequired ? 'required' : 'nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
             'image' => ['required', 'string', 'max:2100000', 'regex:/^data:image\/(?:apng|avif|bmp|gif|jpeg|png|svg\+xml|vnd\.microsoft\.icon|webp|x-icon)(?:;[^,]*)*;base64,/i'],
 
-            'tags' => ['nullable', 'array'],
+            'tags' => ['required', 'array', 'min:1'],
             'tags.*' => ['integer', 'distinct', 'exists:tags,id'],
         ];
     }
@@ -40,8 +40,11 @@ class StoreSpotRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'image.required' => 'Een hoofdfoto is verplicht.',
             'image.max' => 'De verwerkte foto is te groot. Kies de foto opnieuw.',
             'image.regex' => 'De gekozen foto kon niet worden verwerkt.',
+            'tags.required' => 'Kies minimaal één tag.',
+            'tags.min' => 'Kies minimaal één tag.',
         ];
     }
 

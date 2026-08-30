@@ -46,13 +46,20 @@ export type SpotLocationData = {
     fetched_at: string;
 };
 
+export type SpotImage = {
+    id: number;
+    type: string;
+    image_url: string;
+};
+
 export type Spot = {
     id: number;
-    title: string;
+    title: string | null;
     description: string | null;
     latitude: number | null;
     longitude: number | null;
     image_url: string;
+    images: SpotImage[];
     navigation_url: string | null;
     created_at: string;
     user: SpotUser;

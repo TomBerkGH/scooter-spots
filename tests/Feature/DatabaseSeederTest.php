@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\SpotImageType;
 use App\Models\Spot;
+use App\Models\SpotImage;
 use App\Models\Tag;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Storage;
@@ -22,7 +24,12 @@ test('seeder creates the two scooter spots accounts', function () {
     ]);
     expect(Spot::query()->count())->toBe(4);
     expect(Tag::query()->count())->toBe(28);
-    Storage::disk('r2')->assertExists(Spot::query()->pluck('image_path')->all());
+    Storage::disk('r2')->assertExists(
+        SpotImage::query()
+            ->where('type', SpotImageType::Main->value)
+            ->pluck('path')
+            ->all(),
+    );
 });
 
 test('seeded account can log in through fortify', function () {

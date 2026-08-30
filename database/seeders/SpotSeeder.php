@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\SpotImageType;
 use App\Models\Spot;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -49,9 +50,14 @@ class SpotSeeder extends Seeder
                 $imagePath = 'spots/demo-'.$user->id.'-'.$index.'.svg';
                 Storage::disk('r2')->put($imagePath, $this->placeholder($data['title']));
 
-                Spot::query()->updateOrCreate(
+                $spot = Spot::query()->updateOrCreate(
                     ['user_id' => $user->id, 'title' => $data['title']],
-                    [...$data, 'image_path' => $imagePath],
+                    $data,
+                );
+
+                $spot->images()->updateOrCreate(
+                    ['type' => SpotImageType::Main->value],
+                    ['path' => $imagePath],
                 );
             }
         }

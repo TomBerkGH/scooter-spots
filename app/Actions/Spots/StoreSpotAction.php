@@ -4,6 +4,7 @@ namespace App\Actions\Spots;
 
 use App\Contracts\EnrichesSpotLocation;
 use App\Data\StoreSpotData;
+use App\Enums\SpotImageType;
 use App\Models\Spot;
 use App\Models\User;
 use App\Services\SpotImageStorage;
@@ -31,7 +32,11 @@ class StoreSpotAction
                     'description' => $data->description,
                     'latitude' => $data->latitude,
                     'longitude' => $data->longitude,
-                    'image_path' => $imagePath,
+                ]);
+
+                $spot->images()->create([
+                    'type' => SpotImageType::Main->value,
+                    'path' => $imagePath,
                 ]);
 
                 $spot->tags()->sync($data->tagIds);

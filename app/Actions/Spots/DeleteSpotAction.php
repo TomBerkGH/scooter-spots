@@ -18,8 +18,12 @@ class DeleteSpotAction
             throw new AuthorizationException;
         }
 
-        $imagePath = $spot->image_path;
+        /** @var list<string> $imagePaths */
+        $imagePaths = $spot->images()->pluck('path')->all();
         $spot->delete();
-        $this->images->delete($imagePath);
+
+        foreach ($imagePaths as $imagePath) {
+            $this->images->delete($imagePath);
+        }
     }
 }

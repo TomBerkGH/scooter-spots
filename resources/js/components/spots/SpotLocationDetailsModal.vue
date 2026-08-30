@@ -32,7 +32,8 @@ const location = computed(() => props.spot?.location_data ?? null);
             <DialogHeader>
                 <DialogTitle>Locatiegegevens</DialogTitle>
                 <DialogDescription>
-                    OpenStreetMap-gegevens voor {{ spot.title }}
+                    OpenStreetMap-gegevens voor
+                    {{ spot.title || 'deze plek' }}
                 </DialogDescription>
             </DialogHeader>
 

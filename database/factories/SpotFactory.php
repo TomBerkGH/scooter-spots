@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\SpotImageType;
 use App\Models\Spot;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -11,6 +12,23 @@ class SpotFactory extends Factory
 {
     protected $model = Spot::class;
 
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Spot $spot): void {
+            $spot->images()->create([
+                'type' => SpotImageType::Main->value,
+                'path' => 'spots/example.jpg',
+            ]);
+        });
+    }
+
+    public function withMainImage(string $path): static
+    {
+        return $this->afterCreating(function (Spot $spot) use ($path): void {
+            $spot->mainImage()->update(['path' => $path]);
+        });
+    }
+
     public function definition(): array
     {
         return [
@@ -19,7 +37,6 @@ class SpotFactory extends Factory
             'description' => fake()->optional()->sentence(),
             'latitude' => fake()->latitude(),
             'longitude' => fake()->longitude(),
-            'image_path' => 'spots/example.jpg',
         ];
     }
 }

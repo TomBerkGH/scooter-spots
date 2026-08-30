@@ -13,8 +13,8 @@ beforeEach(function () {
 
 test('an owner can delete their spot and image', function () {
     $user = User::factory()->create();
-    $spot = Spot::factory()->for($user)->create(['image_path' => 'spots/owned.jpg']);
-    Storage::disk('public')->put($spot->image_path, 'image');
+    $spot = Spot::factory()->for($user)->withMainImage('spots/owned.jpg')->create();
+    Storage::disk('public')->put('spots/owned.jpg', 'image');
 
     new DeleteSpotAction(new SpotImageStorage('public'))->execute($user, $spot);
 
@@ -23,8 +23,8 @@ test('an owner can delete their spot and image', function () {
 });
 
 test('a user cannot delete another users spot', function () {
-    $spot = Spot::factory()->create(['image_path' => 'spots/protected.jpg']);
-    Storage::disk('public')->put($spot->image_path, 'image');
+    $spot = Spot::factory()->withMainImage('spots/protected.jpg')->create();
+    Storage::disk('public')->put('spots/protected.jpg', 'image');
 
     try {
         (new DeleteSpotAction(new SpotImageStorage('public')))->execute(
